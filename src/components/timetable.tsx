@@ -14,9 +14,13 @@ interface IProps {
 }
 
 export function TimeTable(props: IProps) {
-    function dateAfterSleep(sleepArr: number[]): Date {
-        const sleep = sleepArr.reduce((a, b) => a + b, 0);
+    function timeSinceFirstTry(results: number[], currentAttempt: number): number {
+        return results.slice(0, currentAttempt + 1).reduce((a: number, b: number) => a + b, 0);
+    }
+
+    function dateAfterSleep(results: number[], currentAttempt: number): Date {
         const d = new Date;
+        const sleep = timeSinceFirstTry(results, currentAttempt);
 
         d.setMilliseconds(d.getMilliseconds() + sleep);
 
@@ -28,7 +32,8 @@ export function TimeTable(props: IProps) {
             <TableHeader>
                 <TableRow>
                     <TableHead>Attempt</TableHead>
-                    <TableHead>Sleep</TableHead>
+                    <TableHead className='text-center'>Sleep</TableHead>
+                    <TableHead className='text-center'>Time since first try</TableHead>
                     <TableHead className="text-right">Timestamp</TableHead>
                 </TableRow>
             </TableHeader>
@@ -37,8 +42,9 @@ export function TimeTable(props: IProps) {
                     return (
                         <TableRow key={i}>
                             <TableCell>{i}</TableCell>
-                            <TableCell>{i == 0 ? "N/A" : ms(r, { shortFormat: true })}</TableCell>
-                            <TableCell className="text-right">{dateAfterSleep(props.runResults.slice(0, i + 1)).toLocaleString()}</TableCell>
+                            <TableCell className='text-center'>{i == 0 ? "N/A" : ms(r, { shortFormat: true })}</TableCell>
+                            <TableCell className='text-center'>{i == 0 ? "N/A" : ms(timeSinceFirstTry(props.runResults, i), { shortFormat: true })}</TableCell>
+                            <TableCell className="text-right">{dateAfterSleep(props.runResults, i).toLocaleString()}</TableCell>
                         </TableRow>
                     )
                 })}
