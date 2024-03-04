@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { TimeTable } from "@/components/timetable"
 import { defaultVariables } from "@/lib/variables.ts"
 import { VariableInput, VariableInputKind } from "@/components/ui/variable-input.tsx";
+import { Chart } from "./components/chart";
 /* import { StrategySelector } from "@/components/strategy-selector" */
 
 function App() {
@@ -166,6 +167,7 @@ function App() {
                         />
                     </div>
                     <TimeTable runResults={runResults} />
+                    <Chart />
                 </div>
                 <div>
                     <div className="space-y-5">
