@@ -15,15 +15,73 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
+import { VariableKind } from "@/lib/variables"
+import { PresetSelectedEvent } from "@/lib/events/preset-selected"
 
 const strategies = [
     {
         label: "Simple",
         value: "simple",
+
+        formula: "minSleep",
+        variables: {
+            base: {
+                kind: VariableKind.Number,
+                value: 0,
+            },
+            minSleep: {
+                kind: VariableKind.Duration,
+                value: 1000, // 1000ms = 1s
+            },
+            maxSleep: {
+                kind: VariableKind.Duration,
+                value: 1800000, // 1800000ms = 30m
+            },
+            minJitterFactor: {
+                kind: VariableKind.Float,
+                value: 0.0,
+            },
+            maxJitterFactor: {
+                kind: VariableKind.Float,
+                value: 0.0,
+            },
+            maxAttempts: {
+                kind: VariableKind.Number,
+                value: 10
+            },
+        },
     },
     {
         label: "Exponential Backoff",
         value: "exponential_backoff",
+
+        formula: "min(maxSleep, minSleep * (base ** attempt))",
+        variables: {
+            base: {
+                kind: VariableKind.Number,
+                value: 2,
+            },
+            minSleep: {
+                kind: VariableKind.Duration,
+                value: 1000, // 1000ms = 1s
+            },
+            maxSleep: {
+                kind: VariableKind.Duration,
+                value: 1800000, // 1800000ms = 30m
+            },
+            minJitterFactor: {
+                kind: VariableKind.Float,
+                value: 0.0,
+            },
+            maxJitterFactor: {
+                kind: VariableKind.Float,
+                value: 1.0,
+            },
+            maxAttempts: {
+                kind: VariableKind.Number,
+                value: 10
+            },
+        },
     },
 ]
 
@@ -56,6 +114,15 @@ export function StrategySelector() {
                                 key={strategy.value}
                                 value={strategy.value}
                                 onSelect={(currentValue) => {
+                                    const strategy = strategies.find(s => s.value === currentValue);
+                                    const event = new CustomEvent<PresetSelectedEvent>("presetSelected", {
+                                        detail: {
+                                            formula: strategy!.formula,
+                                            variables: strategy!.variables,
+                                        }
+                                    });
+                                    window.dispatchEvent(event);
+
                                     setValue(currentValue === value ? "" : currentValue)
                                     setOpen(false)
                                 }}

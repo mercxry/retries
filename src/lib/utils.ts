@@ -1,8 +1,8 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 /* function enumFromString<T>(enm: { [s: string]: T }, value: string): T | undefined { */
@@ -10,3 +10,7 @@ export function cn(...inputs: ClassValue[]) {
 /*         ? value as unknown as T */
 /*         : undefined; */
 /* } */
+
+export type ArrayToInterface<T extends string[]> = {
+  [K in T[number]]: string;
+};
