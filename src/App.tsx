@@ -1,16 +1,19 @@
 import React, { useEffect } from "react";
 import ms from "enhanced-ms";
 import validator from "validator";
+import CodeMirror from "@uiw/react-codemirror";
+import { langs } from "@uiw/codemirror-extensions-langs";
+import { tokyoNight } from "@uiw/codemirror-theme-tokyo-night";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { TimeTable } from "@/components/timetable";
 import { VariableKind, Variables, defaultVariables } from "@/lib/variables.ts";
 import { VariableInput } from "@/components/ui/variable-input.tsx";
 import { StrategySelector } from "@/components/strategy-selector";
 import { PresetSelectedEvent } from "@/lib/events/preset-selected";
 import { ArrayToInterface } from "@/lib/utils";
+import { AlertError } from "./components/alert-error";
 
 const inputKeys = Object.keys(defaultVariables);
 type Inputs = ArrayToInterface<typeof inputKeys>;
@@ -65,11 +68,6 @@ function App() {
         };
       });
     });
-
-    const formulaEl = document.getElementById("formula");
-    if (formulaEl != undefined) {
-      formulaEl!.innerText = e.detail.formula;
-    }
   }
 
   function calculate() {
@@ -77,18 +75,40 @@ function App() {
     for (const k in variables) {
       pre = pre.concat(`const ${k}=${variables[k as keyof Variables].value};`);
     }
-    pre = pre.concat(
+    const builtFormula = pre.concat(
       `let run=[0];for(const attempt of Array(maxAttempts).keys())run.push(${formula});run`,
     );
 
-    setRunResults(eval(pre));
+    try {
+      setErrors((prev) => {
+        delete prev["formula"];
+        return {
+          ...prev,
+        };
+      });
+
+      setRunResults(eval(builtFormula));
+    } catch (e) {
+      setErrors((prev) => {
+        return {
+          ...prev,
+          ["formula"]: (e as Error).message,
+        };
+      });
+    }
   }
 
-  function handleFormulaChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    let value = e.currentTarget.value;
-    if (e.currentTarget.value == "" || e.currentTarget.value == undefined) {
+  function handleFormulaChange(value: string) {
+    if (value == "" || value == undefined) {
       value = "min(maxSleep, minSleep * (base ** attempt))";
     }
+
+    setErrors((prev) => {
+      delete prev["formula"];
+      return {
+        ...prev,
+      };
+    });
 
     setFormula(value);
   }
@@ -232,10 +252,14 @@ function App() {
             <h3 className="mb-3 scroll-m-20 text-2xl font-semibold tracking-tight">
               Sleep Formula
             </h3>
-            <Textarea
+            <AlertError message={errors.formula} />
+            <CodeMirror
               id="formula"
+              value={formula}
+              height="200px"
               className="w-[800px]"
-              placeholder="min(maxSleep, minSleep * (base ** attempt))"
+              theme={tokyoNight}
+              extensions={[langs.javascript()]}
               onChange={handleFormulaChange}
             />
           </div>
